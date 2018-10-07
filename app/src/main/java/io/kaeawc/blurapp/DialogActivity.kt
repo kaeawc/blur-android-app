@@ -4,15 +4,18 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_dialog.*
 
+/**
+ * [DialogActivity] is the testing ground for how we might display
+ * the blurred screenshot from another activity.
+ */
 class DialogActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dialog)
 
-        val background = BlurKit.loadBitmapFromFile("/data/user/0/io.kaeawc.blurapp/cache/img_cache/asdf") ?: return
+        val background = BlurKit.loadBlur() ?: return
         blur_layout.setImageBitmap(background)
-        //blur_layout.animate().alpha(1f).duration = 100
     }
 
     override fun onBackPressed() {

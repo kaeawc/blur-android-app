@@ -1,7 +1,5 @@
 package io.kaeawc.blurapp
 
-
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.renderscript.Allocation
@@ -11,7 +9,6 @@ import android.renderscript.ScriptIntrinsicBlur
 import android.app.Activity
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.util.Log
 import android.view.View
 import java.io.File
 import java.io.FileOutputStream
@@ -19,13 +16,16 @@ import java.io.IOException
 
 object BlurKit {
 
-    fun loadBitmapFromFile(fileName: String): Bitmap? {
-        val localOptions = BitmapFactory.Options()
-        localOptions.inPurgeable = true
-        localOptions.inInputShareable = true
-        return BitmapFactory.decodeFile(fileName, localOptions)
+    /**
+     * Given the name of the bitmap, load it from disk
+     */
+    fun loadBlur(): Bitmap? {
+        return BitmapFactory.decodeFile("/data/user/0/io.kaeawc.blurapp/cache/img_cache/blur")
     }
 
+    /**
+     * Save given [Bitmap] to local disk
+     */
     fun saveBitmapToFile(context: Activity, bitmap: Bitmap): String? {
         return try {
             val file = generateFile(context)
@@ -40,28 +40,12 @@ object BlurKit {
         }
     }
 
-    private fun md5(value: String): String {
-        return "asdf"
-    }
-
-    private fun generateFile(context: Activity): File {
-        val timestamp = System.currentTimeMillis().toString()
-        val md5 = md5(timestamp)
-        val localFile = getCacheDir(context, "img_cache")
-        if (!localFile.exists()) {
-            localFile.mkdirs()
-        }
-
-        return File(localFile, md5)
-    }
-
-    private fun getCacheDir(context: Context, dirName: String): File {
-        return File(context.cacheDir, dirName)
-    }
-
+    /**
+     * We want to draw the current [View] onto a [Bitmap]
+     */
     //http://stackoverflow.com/a/9596132/1121509
     fun drawViewToBitmap(view: View, color: Int): Bitmap {
-        val returnedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_4444)
+        val returnedBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(returnedBitmap)
         val bgDrawable = view.background
         when {
@@ -72,12 +56,10 @@ object BlurKit {
         return returnedBitmap
     }
 
-    fun deleteFile(filename: String): Boolean {
-        return File(filename).delete()
-    }
-
-    @SuppressLint("NewApi")
-    fun fastblur(context: Context, sentBitmap: Bitmap, radius: Float): Bitmap {
+    /**
+     * Use RenderScript to quickly apply a blur to the given [Bitmap]
+     */
+    fun fastBlur(context: Context, sentBitmap: Bitmap, radius: Float): Bitmap {
 
         val bitmap = sentBitmap.copy(sentBitmap.config, true)
         val rs = RenderScript.create(context)
@@ -94,4 +76,16 @@ object BlurKit {
         return bitmap
     }
 
+    private fun generateFile(context: Activity): File {
+        val localFile = getCacheDir(context, "img_cache")
+        if (!localFile.exists()) {
+            localFile.mkdirs()
+        }
+
+        return File(localFile, "blur")
+    }
+
+    private fun getCacheDir(context: Context, dirName: String): File {
+        return File(context.cacheDir, dirName)
+    }
 }
